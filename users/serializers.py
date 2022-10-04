@@ -22,6 +22,8 @@ class UserRegisterSerializer(RegisterSerializer):
     #     required=False,
     #     write_only=True,
     # )
+    dependent1=serializers.CharField(write_only=True)
+    dependent2=serializers.CharField(write_only=True)
     username = None
     email = None
 
@@ -62,6 +64,9 @@ class UserRegisterSerializer(RegisterSerializer):
         print(f'{phone_no} tested')
         phone = PhoneNumber.objects.get(
             phone_no=phone_no, verified=True)
+        dep1= self.validated_data.get('dependent1')
+        dep2= self.validated_data.get('dependent2')
+        print(f'{dep1} and {dep2} ')
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.phone_no = phone

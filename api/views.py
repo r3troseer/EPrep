@@ -141,7 +141,7 @@ class UserLoginAPIView(LoginView):
 
 # class session():
 #     def __init__(self):
-#         self.mobile='default'  
+#         self.mobile='default'
         # return request.session['phone']
 
 # def session(request, x=None, y=None):
@@ -151,7 +151,7 @@ class UserLoginAPIView(LoginView):
 #     else:
 #         x=request.session['phone']
 #         return x
-        
+
 
 # def get_session():
 #     session
@@ -163,40 +163,33 @@ class SendOrResendSMSAPIView(GenericAPIView):
     Check if submitted phone number is a valid phone number and send OTP.
     """
     serializer_class = PhoneNumberSerializer
-    
-
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             # Send OTP
 
-            phone_no = str(serializer.validated_data['phone_no'])
+            phone_no = '+234'+str(serializer.validated_data['phone_no'])
             # del request.session['phone']
             # request.session.modified = True
             self.request.session['mobile']=phone_no
             # pho = session()
             # pho.mobile=phone_no
-            
             phon=self.request.session['mobile']
             print(f'{phon} test')
             # print(session(request, x=None, y=None))
-                
             phone = PhoneNumber.objects.filter(
                 phone_no=phone_no, verified=False)
-            
             if phone.exists():
                 print(phone)
                 sms_verification = phone.first()
                 print(sms_verification)
                 sms_verification.send_confirmation()
             else:
-                
                 sms_verification = PhoneNumber.objects.create(
                     phone_no=phone_no, verified=False)
                 print(sms_verification)
                 sms_verification.send_confirmation()
-                
             return Response(status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -212,7 +205,6 @@ class VerifyPhoneNumberAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         # print(session(request, x=None, y=None))
         # request.session['phone']= 'pass'
-        
         # pho = session()
 
 
