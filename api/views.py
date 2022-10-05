@@ -215,6 +215,7 @@ class VerifyPhoneNumberAPIView(GenericAPIView):
             print(f'{phone_no} test')
             # phone_no = validated_data.get('phone_no')
             otp = (serializer.validated_data['otp'])
+            print(otp)
 
             queryset = PhoneNumber.objects.get(phone_no=phone_no)
 
