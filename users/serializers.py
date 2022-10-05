@@ -16,6 +16,9 @@ from .exceptions import (
 
 
 class UserRegisterSerializer(RegisterSerializer):
+    """
+    Serializer to register users .
+    """
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
     # phone_no = serializers.CharField(
@@ -88,7 +91,7 @@ class UserRegisterSerializer(RegisterSerializer):
 
 class UserLoginSerializer(serializers.Serializer):
     """
-    Serializer to login users with email or phone number.
+    Serializer to login users with phone number.
     """
     phone_no = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(

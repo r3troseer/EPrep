@@ -98,7 +98,7 @@ class PhoneNumberView(generics.CreateAPIView):
 
 class UserRegisterationView(RegisterView):
     """
-    Register new users using phone number or email and password.
+    Register new users using phone number and password.
     """
     serializer_class = UserRegisterSerializer
     def get_serializer_context(self):
@@ -197,7 +197,7 @@ class SendOrResendSMSAPIView(GenericAPIView):
 
 class VerifyPhoneNumberAPIView(GenericAPIView):
     """
-    Check if submitted phone number and OTP matches and verify the user.
+    Check if submitted phone number and OTP matches and phone number.
     """
     serializer_class = VerifyPhoneNumberSerialzier
 
