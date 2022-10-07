@@ -11,16 +11,6 @@ levels = (('JSS', 'Junior Secondary School'),
           ('IE', 'International Exams'),
           )
 
-jss = (
-    ('jss1', 'Junior Secondary School 1'),
-    ('jss2', 'Junior Secondary School 2'),
-    ('jss3', 'Junior Secondary School 3')
-)
-
-
-class jss(models.Model):
-    classes = models.CharField(max_length=20, choices=jss)
-
 
 class CourseQuerySet(models.QuerySet):
     def search(self, query):
@@ -36,7 +26,7 @@ class Level(models.Model):
         return self.name
 
 
-class Subject(models.Model):
+class Course(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -46,7 +36,7 @@ class Subject(models.Model):
 class Class(models.Model):
     name = models.CharField(max_length=100)
     level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
-    subject = models.ManyToManyField(Subject)
+    subject = models.ManyToManyField(Course)
 
     def __str__(self):
         return self.name
@@ -68,9 +58,9 @@ class Exam(models.Model):
         return self.name
 
 
-class Topic(models.Model):
+class Lesson(models.Model):
     name = models.CharField(max_length=100)
-    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
+    subject = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     body = models.TextField()
 
     def __str__(self):

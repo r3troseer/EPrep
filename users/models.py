@@ -100,6 +100,8 @@ class PhoneNumber(models.Model):
                 return True
             except TwilioRestException as e:
                 print(e)
+            self.sent = timezone.now()
+            self.save()
         else:
             print("Twilio credentials are not set")
 

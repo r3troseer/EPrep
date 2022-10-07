@@ -1,18 +1,20 @@
 from rest_framework.serializers import ModelSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import Subject, Topic
+from .models import Course, Lesson
 from users.models import User
+
 
 class SubjectSerializer(ModelSerializer):
     class Meta:
-        model = Subject
+        model = Course
         fields = '__all__'
 
 
 class TopicSerializer(ModelSerializer):
     class Meta:
-        model = Topic
+        model = Lesson
         fields = '__all__'
+
 
 class UserSerializer(RegisterSerializer):
     class Meta:

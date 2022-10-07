@@ -1,7 +1,7 @@
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView
 from django.http import request
-from .models import Subject, Topic
+from .models import Course, Lesson
 from users.models import User, PhoneNumber
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -14,21 +14,21 @@ from users.serializers import UserRegisterSerializer, UserLoginSerializer, Phone
 
 @api_view(['GET'])
 def getSubjects(request):
-    subjects = Subject.objects.all()
+    subjects = Course.objects.all()
     serializer = SubjectSerializer(subjects, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
 def getTopics(request):
-    topics = Topic.objects.all()
+    topics = Lesson.objects.all()
     serializer = TopicSerializer(topics, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
 def getTopic(request, pk):
-    topics = Topic.objects.get(id=pk)
+    topics = Lesson.objects.get(id=pk)
     serializer = TopicSerializer(topics, many=False)
     return Response(serializer.data)
 
@@ -43,7 +43,7 @@ def getUser(request):
 @api_view(['POST'])
 def createTopic(request):
     data = request.data
-    topic = Topic.objects.create(
+    topic = Lesson.objects.create(
         name=data['name'],
         subject=data['subject'],
         body=data['body']
