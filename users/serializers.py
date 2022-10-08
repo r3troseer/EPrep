@@ -132,6 +132,7 @@ class UserLoginSerializer(serializers.Serializer):
         #         ('Phone number is not verified.'))
 
         validated_data['user'] = user
+        print ('login sucessful')
         return validated_data
 
 

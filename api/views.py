@@ -101,34 +101,15 @@ class UserRegisterationView(RegisterView):
     Register new users using phone number and password.
     """
     serializer_class = UserRegisterSerializer
+
     def get_serializer_context(self):
-        phone_no =self.request.session.get('mobile', None)
+        phone_no = self.request.session.get('mobile', None)
         context = super(UserRegisterationView, self).get_serializer_context()
         context.update({
             "phone_no": phone_no
             # extra data
         })
         return context
-
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-
-    #     response_data = ''
-
-    #     phone_no = request.data.get('phone_no', None)
-
-    #     # if phone_no:
-    #     #     res = SendOrResendSMSAPIView.as_view()(request._request, *args, **kwargs)
-
-    #     #     if res.status_code == 200:
-    #     #         response_data = {"detail": ("Verification SMS sent.")}
-
-    #     return Response(response_data,
-    #                     status=status.HTTP_201_CREATED,
-    #                     headers=headers)
 
 
 class UserLoginAPIView(LoginView):
@@ -138,31 +119,12 @@ class UserLoginAPIView(LoginView):
     serializer_class = UserLoginSerializer
 
 
-
-# class session():
-#     def __init__(self):
-#         self.mobile='default'
-        # return request.session['phone']
-
-# def session(request, x=None, y=None):
-#     if y:
-#         request.session['phone']= y
-#         return request.session['phone']
-#     else:
-#         x=request.session['phone']
-#         return x
-
-
-# def get_session():
-#     session
-#     return x
-
-
 class SendOrResendSMSAPIView(GenericAPIView):
     """
     Check if submitted phone number is a valid phone number and send OTP.
     """
     serializer_class = PhoneNumberSerializer
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
@@ -172,12 +134,9 @@ class SendOrResendSMSAPIView(GenericAPIView):
             phone_no = '+234'+str(serializer.validated_data['phone_no'])
             # del request.session['phone']
             # request.session.modified = True
-            self.request.session['mobile']=phone_no
-            # pho = session()
-            # pho.mobile=phone_no
-            phon=self.request.session['mobile']
+            self.request.session['mobile'] = phone_no
+            phon = self.request.session['mobile']
             print(f'{phon} test')
-            # print(session(request, x=None, y=None))
             phone = PhoneNumber.objects.filter(
                 phone_no=phone_no, verified=False)
             if phone.exists():
@@ -203,13 +162,9 @@ class VerifyPhoneNumberAPIView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        # print(session(request, x=None, y=None))
-        # request.session['phone']= 'pass'
-        # pho = session()
-
 
         if serializer.is_valid():
-            phone_no =self.request.session['mobile']
+            phone_no = self.request.session['mobile']
 
             # pho=request.session['phone']
             print(f'{phone_no} test')

@@ -4,7 +4,7 @@ import datetime
 
 # Create your models here.
 
-# def year_choice
+# def level_choices
 levels = (('JSS', 'Junior Secondary School'),
           ('SSS', 'Senior Secondary School'),
           ('UTME', 'UTME/PUTME'),
@@ -60,7 +60,7 @@ class Exam(models.Model):
 
 class Lesson(models.Model):
     name = models.CharField(max_length=100)
-    subject = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     body = models.TextField()
 
     def __str__(self):
