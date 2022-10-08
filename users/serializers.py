@@ -116,6 +116,7 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, validated_data):
         phone_no = validated_data.get('phone_no')
         password = validated_data.get('password')
+        print (phone_no, password)
 
         user = None
 
