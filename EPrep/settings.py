@@ -1,4 +1,7 @@
 from pathlib import Path
+from datetime import timedelta
+
+from django.conf import settings
 from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -127,6 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
+# AUTH_TOKEN_VALIDITY = getattr(settings, 'AUTH_TOKEN_VALIDITY', timedelta(days=30))
 # SESSION_SAVE_EVERY_REQUEST = True
 
 SITE_ID = 1
@@ -139,13 +143,18 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_UNIQUE_EMAIL = True
 
+REST_USE_JWT = True
+
+JWT_AUTH_COOKIE = 'phonenumber-auth'
+JWT_AUTH_REFRESH_COOKIE = 'phonenumber-refresh-token'
+
 REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     # ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'users.backends.phone_backend.PhoneNumberAuthBackend',
-    ]
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ),
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
@@ -159,10 +168,7 @@ REST_AUTH_SERIALIZERS = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    # allauth specific authentication methods, such as login by e-mail
-    'allauth.account.auth_backends.AuthenticationBackend',
-    # Needed to login by username in Django admin, regardless of allauth
-    'django.contrib.auth.backends.ModelBackend',
+    'users.backends.phone_backend.PhoneNumberAuthBackend',
 ]
 
 # Token length for OTP
@@ -175,3 +181,6 @@ TOKEN_EXPIRE_MINUTES = 3
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER')
+
+# Termii
+TERMII_KEY = config('TERMII_KEY')

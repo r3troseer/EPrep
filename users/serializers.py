@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from dj_rest_auth.serializers import LoginSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from api.models import Level, Class, Department, Exam, UTME, SubLevel
 from users.models import User, PhoneNumber
 from .exceptions import (
     AccountNotRegisteredException,
@@ -25,8 +26,8 @@ class UserRegisterSerializer(RegisterSerializer):
     #     required=False,
     #     write_only=True,
     # )
-    dependent1=serializers.CharField(write_only=True)
-    dependent2=serializers.CharField(write_only=True)
+    level = serializers.CharField(write_only=True)
+    sub_level = serializers.CharField(write_only=True)
     username = None
     email = None
 
@@ -67,13 +68,19 @@ class UserRegisterSerializer(RegisterSerializer):
         print(f'{phone_no} tested')
         phone = PhoneNumber.objects.get(
             phone_no=phone_no, verified=True)
-        dep1= self.validated_data.get('dependent1')
-        dep2= self.validated_data.get('dependent2')
-        print(f'{dep1} and {dep2} ')
+        lev = self.validated_data.get('level')
+        sub_level = self.validated_data.get('sub_level')
+        level = Level.objects.get(name=lev)
+        sublevel = SubLevel.objects.get(name=sub_level)
+
+        print(f'{lev, level} and {sublevel, sub_level} ')
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.phone_no = phone
-        user.save(update_fields=['first_name', 'last_name', 'phone_no'])
+        user.level = level
+        user.sub_level = sublevel
+        user.save(update_fields=['first_name',
+                  'last_name', 'phone_no', 'level', 'sub_level'])
 
     # Define transaction.atomic to rollback the save operation in case of error
     # @transaction.atomic
@@ -105,8 +112,8 @@ class UserLoginSerializer(serializers.Serializer):
             queries through phonenumber model to get inputed phone number 
             then authenticate
             """
-            phone = PhoneNumber.objects.get(phone_no=phone_no)
-            user = authenticate(username=phone, password=password)
+            # phone = PhoneNumber.objects.get(phone_no=phone_no)
+            user = authenticate(username=str(phone_no), password=password)
         else:
             raise serializers.ValidationError(
                 ("Enter a phone number and password."))
@@ -116,7 +123,7 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, validated_data):
         phone_no = validated_data.get('phone_no')
         password = validated_data.get('password')
-        print (phone_no, password)
+        print(phone_no, password)
 
         user = None
 
@@ -133,7 +140,7 @@ class UserLoginSerializer(serializers.Serializer):
         #         ('Phone number is not verified.'))
 
         validated_data['user'] = user
-        print ('login sucessful', phone_no, password)
+        print('login sucessful', phone_no, password)
         return validated_data
 
 

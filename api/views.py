@@ -14,7 +14,11 @@ from users.serializers import UserRegisterSerializer, UserLoginSerializer, Phone
 
 @api_view(['GET'])
 def getSubjects(request):
-    subjects = Course.objects.all()
+    user = request.user
+    print(user)
+    sublevel = user.sublevel
+    print(sublevel)
+    subjects = Course.objects.filter(sublevel__name=sublevel)
     serializer = SubjectSerializer(subjects, many=True)
     return Response(serializer.data)
 

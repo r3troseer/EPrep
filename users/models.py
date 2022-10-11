@@ -1,5 +1,6 @@
 import datetime
 import requests
+from api.models import Level, SubLevel
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -52,6 +53,7 @@ class PhoneNumber(models.Model):
         return expiration_date <= timezone.now()
 
     def send_confirmation(self):
+        # termii_key = settings.TERMII_KEY
         # url = "https://termii.com/api/sms/send"
         # self.code = self.generate_code()
         # print(
@@ -62,11 +64,13 @@ class PhoneNumber(models.Model):
         #         "sms": f"Hi there, testing Termii {self.code}",
         #         "type": "plain",
         #         "channel": "generic",
-        #         "api_key": "key",
+        #         "api_key": termii_key,
         # }
         # headers = {
         # 'Content-Type': 'application/json',
         # }
+        # self.sent = timezone.now()
+        # self.save()
         # response = requests.request("POST", url, headers=headers, json=payload)
         # print(response.text)
         twilio_account_sid = settings.TWILIO_ACCOUNT_SID
@@ -76,7 +80,7 @@ class PhoneNumber(models.Model):
         self.code = self.generate_code()
 
         print(
-             f'Sending security code {self.code} to phone {self.phone_no}')
+            f'Sending security code {self.code} to phone {self.phone_no}')
 
         if all(
             [
@@ -124,6 +128,8 @@ class User(AbstractUser):
     username = None
     phone_no = models.OneToOneField(
         PhoneNumber, related_name='user', on_delete=models.CASCADE, null=True)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
+    sublevel = models.ForeignKey(SubLevel, on_delete=models.CASCADE, null=True)
     USERNAME_FIELD = 'phone_no'
     REQUIRED_FIELDS = ['first_name', 'last_name', ]
 

@@ -4,7 +4,13 @@ from .models import Course, Lesson
 from users.models import User
 
 
+class TopicSerializer(ModelSerializer):
+    class Meta:
+        model = Lesson
+        exclude=['course']
+
 class SubjectSerializer(ModelSerializer):
+    lesson = TopicSerializer(many=True)
     class Meta:
         model = Course
         fields = '__all__'

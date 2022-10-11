@@ -12,7 +12,8 @@ class PhoneNumberAuthBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None):
 
         try:
-            user = User.objects.get(phone_no=username)
+            # phone = PhoneNumber.objects.get(phone_no=username)
+            user = User.objects.get(phone_no__phone_no=username)
             if user.check_password(password):
                 return user
         except User.DoesNotExist:

@@ -19,13 +19,6 @@ class CourseQuerySet(models.QuerySet):
         return qs
 
 
-class Level(models.Model):
-    name = models.CharField(max_length=100, choices=levels)
-
-    def __str__(self):
-        return self.name
-
-
 class Course(models.Model):
     name = models.CharField(max_length=100)
 
@@ -33,13 +26,30 @@ class Course(models.Model):
         return self.name
 
 
-class Class(models.Model):
+class Level(models.Model):
+    name = models.CharField(max_length=100, choices=levels)
+
+    def __str__(self):
+        return self.name
+
+
+class SubLevel(models.Model):
     name = models.CharField(max_length=100)
     level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
     subject = models.ManyToManyField(Course)
 
     def __str__(self):
         return self.name
+
+
+
+
+class Class(models.Model):
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
+    subject = models.ManyToManyField(Course)
+
+    # def __str__(self):
+    #     return self.subject
 
 
 class Department(models.Model):
@@ -58,13 +68,26 @@ class Exam(models.Model):
         return self.name
 
 
-class Lesson(models.Model):
+class UTME(models.Model):
     name = models.CharField(max_length=100)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Lesson(models.Model):
+    name = models.CharField(max_length=200)
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, related_name='lesson',null=True)
     body = models.TextField()
 
     def __str__(self):
         return self.name
+
+class topic(models.Model):
+    title = models.CharField(max_length=500)
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
+
 
 
 # class Question(models.Model):
