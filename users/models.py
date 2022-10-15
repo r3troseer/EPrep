@@ -137,5 +137,8 @@ class User(AbstractUser):
         phone = str(self.phone_no)
         return phone
 
+    def full_name(self):
+        return self.get_full_name()
+
     # def __str__(self):
     #     return self.first_name

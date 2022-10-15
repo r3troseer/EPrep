@@ -1,15 +1,15 @@
 from dj_rest_auth.registration.views import RegisterView
-from dj_rest_auth.views import LoginView
+from dj_rest_auth.views import LoginView, UserDetailsView
 from django.http import request
-from .models import Course, Lesson
+from .models import Course, Lesson, Topic
 from users.models import User, PhoneNumber
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import SubjectSerializer, TopicSerializer, UserSerializer
+from .serializers import SubjectsSerializer, TopicSerializer, UserSerializer, LessonSerializer
 # from otp.serializers import OtpSerializer
-from users.serializers import UserRegisterSerializer, UserLoginSerializer, PhoneNumberSerializer, VerifyPhoneNumberSerialzier
+from users.serializers import UserRegisterSerializer, UserLoginSerializer, UserDetailsSerializer, PhoneNumberSerializer, VerifyPhoneNumberSerialzier
 
 
 @api_view(['GET'])
@@ -19,21 +19,22 @@ def getSubjects(request):
     sublevel = user.sublevel
     print(sublevel)
     subjects = Course.objects.filter(sublevel__name=sublevel)
-    serializer = SubjectSerializer(subjects, many=True)
+    serializer = SubjectsSerializer(subjects, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
 def getTopics(request):
-    topics = Lesson.objects.all()
+    topics = Topic.objects.all()
     serializer = TopicSerializer(topics, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
-def getTopic(request, pk):
+def getLesson(request, pk):
     topics = Lesson.objects.get(id=pk)
-    serializer = TopicSerializer(topics, many=False)
+    print(topics)
+    serializer = LessonSerializer(topics, many=False)
     return Response(serializer.data)
 
 
@@ -121,6 +122,19 @@ class UserLoginAPIView(LoginView):
     Authenticate existing users using phone number and password.
     """
     serializer_class = UserLoginSerializer
+
+
+class Profile(UserDetailsView):
+    """
+    Reads and updates UserModel fields
+    Accepts GET, PUT, PATCH methods.
+
+    Display fields: pk, full_name, email, phone_no
+    Read-only fields: pk, phone_no
+
+    Returns UserModel fields.
+    """
+    serializer_class = UserDetailsSerializer
 
 
 class SendOrResendSMSAPIView(GenericAPIView):

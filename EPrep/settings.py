@@ -165,6 +165,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 REST_AUTH_SERIALIZERS = {
     "LOGIN_SERIALIZER": "users.serializers.UserLoginSerializer",
+     'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailsSerializer',
 }
 
 AUTHENTICATION_BACKENDS = [

@@ -1,25 +1,46 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import Course, Lesson
+from .models import Course, Lesson, Topic
 from users.models import User
 
 
-class TopicSerializer(ModelSerializer):
+class LessonsSerializer(ModelSerializer):
     class Meta:
         model = Lesson
-        exclude=['course']
+        fields = ['id', 'name']
 
-class SubjectSerializer(ModelSerializer):
-    lesson = TopicSerializer(many=True)
+
+class TopicSerializer(ModelSerializer):
+    class Meta:
+        model = Topic
+        # fields = '__all__'
+        exclude = ['lesson']
+
+
+class LessonSerializer(LessonsSerializer):
+    topic = TopicSerializer(many=True)
+    class Meta:
+        model = Lesson
+        fields = ['id', 'name', 'topic']
+
+
+class SubjectsSerializer(ModelSerializer):
+    lesson = LessonsSerializer(many=True)
+
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = ['id', 'name', 'lesson']
 
 
-class TopicSerializer(ModelSerializer):
-    class Meta:
-        model = Lesson
-        fields = '__all__'
+class SubjectSerializer(SubjectsSerializer):
+    pass
+
+
+# class TopicSerializer(ModelSerializer):
+#     class Meta:
+#         model = Lesson
+#         fields = '__all__'
 
 
 class UserSerializer(RegisterSerializer):

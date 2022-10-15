@@ -71,16 +71,16 @@ class UserRegisterSerializer(RegisterSerializer):
         lev = self.validated_data.get('level')
         sub_level = self.validated_data.get('sub_level')
         level = Level.objects.get(name=lev)
-        sublevel = SubLevel.objects.get(name=sub_level)
+        sublevel = SubLevel.objects.get(name=str(sub_level))
 
         print(f'{lev, level} and {sublevel, sub_level} ')
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.phone_no = phone
         user.level = level
-        user.sub_level = sublevel
+        user.sublevel = sublevel
         user.save(update_fields=['first_name',
-                  'last_name', 'phone_no', 'level', 'sub_level'])
+                  'last_name', 'phone_no', 'level', 'sublevel'])
 
     # Define transaction.atomic to rollback the save operation in case of error
     # @transaction.atomic
@@ -113,7 +113,7 @@ class UserLoginSerializer(serializers.Serializer):
             then authenticate
             """
             # phone = PhoneNumber.objects.get(phone_no=phone_no)
-            user = authenticate(username=str(phone_no), password=password)
+            user = authenticate(username='+234'+str(phone_no), password=password)
         else:
             raise serializers.ValidationError(
                 ("Enter a phone number and password."))
@@ -145,15 +145,22 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    phone_no = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         fields = (
+            'full_name',
             'pk',
             'email',
-            'phone_number',
+            'phone_no',
         )
-        read_only_fields = ('pk', 'email',)
+        read_only_fields = ('pk', 'phone_no',)
+
+    # def get_phone_no(self):
+    #     pho = User.phone_no__name
+    #     print(pho)
+    #     return User.phone_no__name
 
 
 class PhoneNumberSerializer(serializers.ModelSerializer):
