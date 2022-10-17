@@ -84,14 +84,14 @@ class Lesson(models.Model):
 
 
 class Topic(models.Model):
-    name = models.CharField(max_length=500)
+    note = models.CharField(max_length=500)
     videoUrl = models.CharField(max_length=1500, null=True)
     thumbnailUrl = models.CharField(max_length=1500, null=True)
     lesson = models.ForeignKey(
         Lesson, on_delete=models.SET_NULL, related_name='topic', null=True)
 
     def __str__(self):
-        return self.name
+        return self.note
 
 # class Question(models.Model):
 #     year = models.IntegerField(('Year'))
