@@ -112,14 +112,15 @@ class PhoneNumber(models.Model):
     def check_verification(self, code):
         if (
             not self.is_code_expired() and
-            code == self.code and
-            self.verified == False
+            code == self.code 
+            # and self.verified == False
         ):
             self.verified = True
             self.save()
         else:
             raise NotAcceptable(
-                ("Your security code is wrong, expired or this phone is verified before."))
+                # ("Your security code is wrong, expired or this phone is verified before."))
+                ("Your security code is wrong or expired."))
 
         return self.verified
 

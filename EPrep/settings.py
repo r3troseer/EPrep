@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     # 'otp.apps.OtpConfig',
     'users.apps.UsersConfig',
+    'payment.apps.PaymentConfig',
 
     'django.contrib.sites',
     'allauth',
@@ -110,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -185,3 +186,5 @@ TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER')
 
 # Termii
 TERMII_KEY = config('TERMII_KEY')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')

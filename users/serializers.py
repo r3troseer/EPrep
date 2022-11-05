@@ -5,8 +5,9 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from dj_rest_auth.serializers import LoginSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from api.models import Level, Class, Department, Exam, UTME, SubLevel
+from api.models import Level, Class, Department, Exam, SubLevel
 from users.models import User, PhoneNumber
+from users.levels import level_set, sub_set
 from .exceptions import (
     AccountNotRegisteredException,
     InvalidCredentialsException,
@@ -70,10 +71,11 @@ class UserRegisterSerializer(RegisterSerializer):
             phone_no=phone_no, verified=True)
         lev = self.validated_data.get('level')
         sub_level = self.validated_data.get('sub_level')
-        level = Level.objects.get(name=lev)
-        sublevel = SubLevel.objects.get(name=str(sub_level))
 
-        print(f'{lev, level} and {sublevel, sub_level} ')
+        level = Level.objects.get(name=level_set.get(lev))
+        sublevel = SubLevel.objects.get(name=sub_set.get(lev).get(sub_level))
+
+        print(f'{lev, level} and {sub_level, sublevel}')
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.phone_no = phone
@@ -113,7 +115,8 @@ class UserLoginSerializer(serializers.Serializer):
             then authenticate
             """
             # phone = PhoneNumber.objects.get(phone_no=phone_no)
-            user = authenticate(username='+234'+str(phone_no), password=password)
+            user = authenticate(
+                username=str(phone_no), password=password)
         else:
             raise serializers.ValidationError(
                 ("Enter a phone number and password."))
@@ -157,10 +160,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('pk', 'phone_no',)
 
-    # def get_phone_no(self):
-    #     pho = User.phone_no__name
-    #     print(pho)
-    #     return User.phone_no__name
 
 
 class PhoneNumberSerializer(serializers.ModelSerializer):

@@ -4,8 +4,9 @@ from django.http import request
 from .models import Course, Lesson, Topic
 from users.models import User, PhoneNumber
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import SubjectsSerializer, TopicSerializer, UserSerializer, LessonSerializer
 # from otp.serializers import OtpSerializer
@@ -13,6 +14,7 @@ from users.serializers import UserRegisterSerializer, UserLoginSerializer, UserD
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getSubjects(request):
     user = request.user
     print(user)
@@ -149,23 +151,30 @@ class SendOrResendSMSAPIView(GenericAPIView):
         if serializer.is_valid():
             # Send OTP
 
-            phone_no = '+234'+str(serializer.validated_data['phone_no'])
+            phone_no = str(serializer.validated_data['phone_no'])
             # del request.session['phone']
             # request.session.modified = True
             self.request.session['mobile'] = phone_no
             phon = self.request.session['mobile']
-            print(f'{phon} test')
+            print(f'{phon}, session test')
             phone = PhoneNumber.objects.filter(
-                phone_no=phone_no, verified=False)
+                phone_no=phone_no)
+            user = User.objects.filter(phone_no__phone_no=phone_no)
             if phone.exists():
-                print(phone)
-                sms_verification = phone.first()
-                print(sms_verification)
-                sms_verification.send_confirmation()
+                if user:
+                    print(f'{user}, user set')
+                    # checks if user exists then returns http code 409
+                    message = {'detail': ('Phone number already registered.')}
+                    return Response(message, status=status.HTTP_409_CONFLICT)
+                else:
+                    print(f'{phone}, phone set')
+                    sms_verification = phone.first()
+                    print(f'{sms_verification}, exists')
+                    sms_verification.send_confirmation()
             else:
                 sms_verification = PhoneNumber.objects.create(
                     phone_no=phone_no, verified=False)
-                print(sms_verification)
+                print(f'{sms_verification}, created')
                 sms_verification.send_confirmation()
             return Response(status=status.HTTP_200_OK)
 
