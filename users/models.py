@@ -9,14 +9,8 @@ from django.contrib.auth.models import AbstractUser
 from rest_framework.exceptions import NotAcceptable
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
-
-# Create your models here.
-# class User(AbstractUser):
-#     # phone_no = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE)
-#     REQUIRED_FIELDS = ['first_name', 'last_name',]
-
-#     def __str__(self):
-#         return self.phone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class PhoneNumber(models.Model):
@@ -112,7 +106,7 @@ class PhoneNumber(models.Model):
     def check_verification(self, code):
         if (
             not self.is_code_expired() and
-            code == self.code 
+            code == self.code
             # and self.verified == False
         ):
             self.verified = True
@@ -128,18 +122,50 @@ class PhoneNumber(models.Model):
 class User(AbstractUser):
     username = None
     phone_no = models.OneToOneField(
-        PhoneNumber, related_name='user', on_delete=models.CASCADE, null=True)
-    level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
-    sublevel = models.ForeignKey(SubLevel, on_delete=models.CASCADE, null=True)
+        PhoneNumber, related_name='user', on_delete=models.CASCADE, null=True, blank=True)
+    level = models.ForeignKey(
+        Level, on_delete=models.CASCADE, null=True, blank=True)
+    sublevel = models.ForeignKey(
+        SubLevel, on_delete=models.CASCADE, null=True, blank=True)
+    is_parent = models.BooleanField(default=False)
     USERNAME_FIELD = 'phone_no'
     REQUIRED_FIELDS = ['first_name', 'last_name', ]
-
-    def __str__(self):
-        phone = str(self.phone_no)
-        return phone
 
     def full_name(self):
         return self.get_full_name()
 
+    def __str__(self):
+        return f'{self.full_name()} | {str(self.phone_no)}'
+
     # def __str__(self):
     #     return self.first_name
+
+
+@receiver(post_save, sender=User)
+def create_parent(sender, instance, *args, **kwargs):
+    if instance.is_parent == True:
+        try:
+            parent = Parent.objects.get(user=instance)
+            print(f'{parent} | True')
+        except Parent.DoesNotExist:
+            Parent.objects.create(user=instance)
+            print('created')
+            pass
+
+
+class Parent(models.Model):
+    user = models.OneToOneField(
+        User, related_name='parent', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.user)
+
+
+class Student(models.Model):
+    user = models.OneToOneField(
+        User, related_name='student', on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        Parent,  related_name='student', on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.user)

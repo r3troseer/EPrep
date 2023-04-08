@@ -32,7 +32,7 @@ class PayHistory(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class Plan(models.Model):
@@ -57,7 +57,7 @@ class UserPlan(models.Model):
     reference_code = models.CharField(max_length=200, default='', blank=True)
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 @receiver(post_save, sender=UserPlan)
@@ -75,18 +75,18 @@ class Subscription(models.Model):
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.user_plan.user
+        return str(self.user_plan.user)
 
 
-@receiver(pre_init, sender=Level)
-def update_active(sender, *args, **kwargs):
-    instance = Subscription.objects.filter(expires_in__lt=today)
-    print('intiated')
-    if instance:
-        for i in instance:
-            sub = Subscription.objects.get(id=i.id)
-            print(sub)
-            sub.active = False
-            sub.save()
-            print('done')
-            # sub.delete()
+# @receiver(pre_init, sender=Level)
+# def update_active(sender, *args, **kwargs):
+#     instance = Subscription.objects.filter(expires_in__lt=today)
+#     # print('intiated sub check')
+#     if instance:
+#         for i in instance:
+#             sub = Subscription.objects.get(id=i.id)
+#             # print(f'{sub}|sub check')
+#             sub.active = False
+#             sub.save()
+#             # print('sub check done')
+#             # sub.delete()

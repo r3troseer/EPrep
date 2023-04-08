@@ -2,13 +2,13 @@ from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView, UserDetailsView
 from django.http import request
 from .models import Course, Lesson, Topic
-from users.models import User, PhoneNumber
+from users.models import User, PhoneNumber, Parent, Student
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SubjectsSerializer, TopicSerializer, UserSerializer, LessonSerializer
+from .serializers import SubjectsSerializer, TopicSerializer, LessonSerializer, ChildSerializer
 # from otp.serializers import OtpSerializer
 from users.serializers import UserRegisterSerializer, UserLoginSerializer, UserDetailsSerializer, PhoneNumberSerializer, VerifyPhoneNumberSerialzier
 
@@ -19,7 +19,8 @@ def getSubjects(request):
     user = request.user
     print(user)
     sublevel = user.sublevel
-    print(sublevel)
+    level = user.sublevel.level
+    print(sublevel, level)
     subjects = Course.objects.filter(sublevel__name=sublevel)
     serializer = SubjectsSerializer(subjects, many=True)
     return Response(serializer.data)
@@ -40,13 +41,6 @@ def getLesson(request, pk):
     return Response(serializer.data)
 
 
-@api_view(['GET'])
-def getUser(request):
-    user = User.objects.all
-    serializer = UserSerializer(user, many=True)
-    return Response(serializer.data)
-
-
 @api_view(['POST'])
 def createTopic(request):
     data = request.data
@@ -59,48 +53,32 @@ def createTopic(request):
     return Response(serializer.data)
 
 
-# @api_view(['GET'])
-# def verify_view(request):
-#     data = request.data
-#     serializer = OtpSerializer
-#     return Response(serializer.data)
+class ChildView(generics.CreateAPIView, generics.ListAPIView):
+    """
+    View children and add to registered parent
+    """
+    serializer_class = ChildSerializer
+    permission_classes = IsAuthenticated
 
+    def get_serializer_context(self):
+        parent = self.request.user
+        context = super(ChildView, self).get_serializer_context()
+        context.update({
+            "parent": parent
+            # extra data
+        })
+        return context
 
-class PhoneNumberView(generics.CreateAPIView):
-    queryset = PhoneNumber.objects.all()
-    serializer_class = PhoneNumberSerializer
+    def get_queryset(self):
+        user = self.request.user
+        parent = Parent.objects.get(user=user)
+        queryset = Student.objects.filter(parent=parent)
+        return queryset
 
-    def perform_create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        headers = self.get_success_headers(serializer.data)
-        response_data = ''
-        phone_no = request.data.get('phone_no', None)
-        print('okay')
-
-        if phone_no:
-            res = SendOrResendSMSAPIView.as_view()(request, *args, **kwargs)
-
-            if res.status_code == 200:
-                response_data = {"detail": (
-                    "Verification e-mail and SMS sent.")}
-
-        return Response(response_data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
-
-    # def create(self, request):
-    #     serializer = self.get_serializer(data=request.data)
-
-    #     if serializer.is_valid():
-    #         phone_number = str(serializer.validated_data[phone_number])
-
-    #         phone_number.send_confirmation
-    #         return Response(status=status.HTTP_200_OK)
-
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class UserRegisterView(RegisterView):
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            user = serializer.save()
+            return user
 
 
 class UserRegisterationView(RegisterView):
@@ -137,6 +115,7 @@ class Profile(UserDetailsView):
     Returns UserModel fields.
     """
     serializer_class = UserDetailsSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class SendOrResendSMSAPIView(GenericAPIView):
@@ -150,17 +129,15 @@ class SendOrResendSMSAPIView(GenericAPIView):
 
         if serializer.is_valid():
             # Send OTP
-
             phone_no = str(serializer.validated_data['phone_no'])
-            # del request.session['phone']
-            # request.session.modified = True
+            # stores number input in session
             self.request.session['mobile'] = phone_no
             phon = self.request.session['mobile']
             print(f'{phon}, session test')
             phone = PhoneNumber.objects.filter(
                 phone_no=phone_no)
             user = User.objects.filter(phone_no__phone_no=phone_no)
-            if phone.exists():
+            if phone.exists():  # checks if number exists in database
                 if user:
                     print(f'{user}, user set')
                     # checks if user exists then returns http code 409
@@ -168,22 +145,26 @@ class SendOrResendSMSAPIView(GenericAPIView):
                     return Response(message, status=status.HTTP_409_CONFLICT)
                 else:
                     print(f'{phone}, phone set')
+                    # sends verification if user does not exist
                     sms_verification = phone.first()
                     print(f'{sms_verification}, exists')
                     sms_verification.send_confirmation()
+                    message = {'detail': ('Verification message sent.')}
             else:
+                # create new number and sends verification
                 sms_verification = PhoneNumber.objects.create(
                     phone_no=phone_no, verified=False)
                 print(f'{sms_verification}, created')
                 sms_verification.send_confirmation()
-            return Response(status=status.HTTP_200_OK)
+                message = {'detail': ('Verification message sent.')}
+            return Response(message, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyPhoneNumberAPIView(GenericAPIView):
     """
-    Check if submitted phone number and OTP matches and phone number.
+    Check if submitted phone number and OTP matches.
     """
     serializer_class = VerifyPhoneNumberSerialzier
 
@@ -191,16 +172,12 @@ class VerifyPhoneNumberAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
+            # gets number from session
             phone_no = self.request.session['mobile']
-
-            # pho=request.session['phone']
             print(f'{phone_no} test')
-            # phone_no = validated_data.get('phone_no')
             otp = (serializer.validated_data['otp'])
             print(otp)
-
             queryset = PhoneNumber.objects.get(phone_no=phone_no)
-
             queryset.check_verification(code=otp)
             message = {'detail': ('Phone number successfully verified.')}
             return Response(message, status=status.HTTP_200_OK)

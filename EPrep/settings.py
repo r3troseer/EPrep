@@ -166,7 +166,12 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 REST_AUTH_SERIALIZERS = {
     "LOGIN_SERIALIZER": "users.serializers.UserLoginSerializer",
-     'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailsSerializer',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailsSerializer',
+}
+
+SIMPLE_JWT = {
+'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
 }
 
 AUTHENTICATION_BACKENDS = [

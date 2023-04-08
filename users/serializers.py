@@ -27,8 +27,9 @@ class UserRegisterSerializer(RegisterSerializer):
     #     required=False,
     #     write_only=True,
     # )
-    level = serializers.CharField(write_only=True)
-    sub_level = serializers.CharField(write_only=True)
+    level = serializers.CharField(write_only=True, required=False)
+    sub_level = serializers.CharField(write_only=True, required=False)
+    is_parent = serializers.BooleanField(required=False)
     username = None
     email = None
 
@@ -52,16 +53,6 @@ class UserRegisterSerializer(RegisterSerializer):
     #         'last_name': self.validated_data.get('last_name', '')
         # }
 
-    # def create_user(self, user, validated_data):
-    #     phone_no = validated_data.get("phone_no")
-    #     first_name = validated_data.get("first_name")
-    #     last_name = validated_data.get("last_name")
-    #     phone = PhoneNumber.objects.get(
-    #         phone_no=phone_no, verified=True)
-    #     user = User.objects.create(
-    #         phone_no=phone, first_name=first_name, last_name=last_name)
-
-    #     return user
 
     def custom_signup(self, request, user):
         # self.create_user(user, self.get_cleaned_data_extra())
@@ -71,18 +62,24 @@ class UserRegisterSerializer(RegisterSerializer):
             phone_no=phone_no, verified=True)
         lev = self.validated_data.get('level')
         sub_level = self.validated_data.get('sub_level')
+        try:
+            level = Level.objects.get(name=level_set.get(lev))
+            sublevel = SubLevel.objects.get(
+                name=sub_set.get(lev).get(sub_level))
+            user.level = level
+            user.sublevel = sublevel
+            print(f'{lev, level} and {sub_level, sublevel}')
+        except (Level.DoesNotExist, SubLevel.DoesNotExist):
+            pass
+        parent = self.validated_data.get('is_parent')
 
-        level = Level.objects.get(name=level_set.get(lev))
-        sublevel = SubLevel.objects.get(name=sub_set.get(lev).get(sub_level))
-
-        print(f'{lev, level} and {sub_level, sublevel}')
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.phone_no = phone
-        user.level = level
-        user.sublevel = sublevel
+        user.is_parent = parent
+
         user.save(update_fields=['first_name',
-                  'last_name', 'phone_no', 'level', 'sublevel'])
+                  'last_name', 'phone_no', 'level', 'sublevel', 'is_parent'])
 
     # Define transaction.atomic to rollback the save operation in case of error
     # @transaction.atomic
@@ -159,7 +156,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             'phone_no',
         )
         read_only_fields = ('pk', 'phone_no',)
-
 
 
 class PhoneNumberSerializer(serializers.ModelSerializer):

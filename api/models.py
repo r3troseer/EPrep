@@ -3,6 +3,14 @@ from django.db.models import Q
 import datetime
 
 # Create your models here.
+colours = (
+    ('red', 'red'),
+    ('blue', 'blue'),
+    ('green', 'green'),
+    ('yellow', 'yellow'),
+    ('orange', 'orange'),
+    ('purple', 'purple'),
+)
 
 # def level_choices
 levels = (('JSS', 'Junior Secondary School'),
@@ -21,6 +29,7 @@ class CourseQuerySet(models.QuerySet):
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
+    colour = models.CharField(max_length=50, choices=colours, null=True)
 
     def __str__(self):
         return self.name
@@ -35,7 +44,8 @@ class Level(models.Model):
 
 class SubLevel(models.Model):
     name = models.CharField(max_length=100)
-    level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True)
+    level = models.ForeignKey(
+        Level, on_delete=models.CASCADE, related_name='sublevel', null=True)
     subject = models.ManyToManyField(Course)
 
     def __str__(self):
@@ -76,6 +86,7 @@ class UTME(models.Model):
 
 class Lesson(models.Model):
     name = models.CharField(max_length=200)
+    image_url = models.CharField(max_length=500, null=True)
     course = models.ForeignKey(
         Course, on_delete=models.SET_NULL, related_name='lesson', null=True)
 
